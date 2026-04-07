@@ -1,28 +1,26 @@
-import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCProviderClient } from "@/providers";
 import { ClerkProvider } from "@clerk/nextjs";
-import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { extractRouterConfig } from "uploadthing/server";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "NewTube | Your favorite videos, right here",
+  title: "Hyvmind | Pattern's Knowledge Platform",
   description:
-    "NewTube is a video sharing platform that allows you to share your favorite videos with your friends and family.",
+    "Hyvmind is Pattern's internal AI learning and knowledge platform. Discover resources, learn from experts, and level up your skills.",
   icons: {
     icon: "/logo.svg",
   },
-  category: "social",
+  category: "knowledge",
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   },
 };
 
@@ -34,9 +32,7 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl={"/"}>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.className} antialiased`}>
-          {/* Hydrate UploadThing config to avoid client handshake fallback */}
-          <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+        <body className={`${dmSans.className} antialiased`}>
           <Toaster richColors />
           <TRPCProviderClient>{children}</TRPCProviderClient>
         </body>

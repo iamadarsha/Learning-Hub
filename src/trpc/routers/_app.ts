@@ -1,13 +1,24 @@
 import { categoriesRouter } from "@/modules/categories/server/procedores";
+import { expertsRouter } from "@/modules/experts/server/procedures";
+import { leaderboardRouter } from "@/modules/leaderboard/server/procedures";
+import { progressRouter } from "@/modules/progress/server/procedures";
+import { resourcesRouter } from "@/modules/resources/server/procedures";
+import { searchRouter } from "@/modules/search/server/procedures";
 import { studioRouter } from "@/modules/studio/server/procedures";
-
-import { videosRouter } from "@/modules/videos/server/procedures";
+import { usersRouter } from "@/modules/users/server/procedures";
+import { xpRouter } from "@/modules/xp/server/procedures";
 import { createTRPCRouter } from "../init";
 
 export const appRouter = createTRPCRouter({
   categories: categoriesRouter,
+  resources: resourcesRouter,
   studio: studioRouter,
-  videos: videosRouter,
+  experts: expertsRouter,
+  xp: xpRouter,
+  leaderboard: leaderboardRouter,
+  progress: progressRouter,
+  search: searchRouter,
+  users: usersRouter,
 });
-// export type definition of API
+
 export type AppRouter = typeof appRouter;

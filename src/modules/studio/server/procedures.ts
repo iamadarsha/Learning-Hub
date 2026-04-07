@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { videos } from "@/db/schema";
+import { resources } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, lt, or } from "drizzle-orm";
@@ -10,14 +10,14 @@ export const studioRouter = createTRPCRouter({
     const { id } = input;
     const { id: userId } = ctx.user;
 
-    const [video] = await db
+    const [resource] = await db
       .select()
-      .from(videos)
-      .where(and(eq(videos.id, id), eq(videos.userId, userId)))
+      .from(resources)
+      .where(and(eq(resources.id, id), eq(resources.userId, userId)))
       .limit(1);
-    if (!video) throw new TRPCError({ code: "NOT_FOUND" });
+    if (!resource) throw new TRPCError({ code: "NOT_FOUND" });
 
-    return video;
+    return resource;
   }),
   getMany: protectedProcedure
     .input(
@@ -36,31 +36,26 @@ export const studioRouter = createTRPCRouter({
       const { id: userId } = ctx.user;
       const data = await db
         .select()
-        .from(videos)
+        .from(resources)
         .where(
           and(
-            eq(videos.userId, userId),
+            eq(resources.userId, userId),
             cursor
               ? or(
-                  lt(videos.updatedAt, cursor.updatedAt),
-                  and(eq(videos.updatedAt, cursor.updatedAt), eq(videos.id, cursor.id))
+                  lt(resources.updatedAt, cursor.updatedAt),
+                  and(eq(resources.updatedAt, cursor.updatedAt), eq(resources.id, cursor.id))
                 )
               : undefined
           )
         )
-        .orderBy(desc(videos.updatedAt), desc(videos.id))
+        .orderBy(desc(resources.updatedAt), desc(resources.id))
         .limit(limit + 1);
 
       const hasMore = data.length > limit;
       const items = hasMore ? data.slice(0, -1) : data;
-
-      // Set the next cursor
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore ? { id: lastItem.id, updatedAt: lastItem.updatedAt } : null;
 
-      return {
-        items,
-        nextCursor,
-      };
+      return { items, nextCursor };
     }),
 });
