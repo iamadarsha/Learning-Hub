@@ -1,6 +1,6 @@
 import { categoriesRouter } from "@/modules/categories/server/procedores";
 import { expertsRouter } from "@/modules/experts/server/procedures";
-import { leaderboardRouter } from "@/modules/leaderboard/server/procedures";
+
 import { progressRouter } from "@/modules/progress/server/procedures";
 import { resourcesRouter } from "@/modules/resources/server/procedures";
 import { searchRouter } from "@/modules/search/server/procedures";
@@ -15,7 +15,7 @@ export const appRouter = createTRPCRouter({
   studio: studioRouter,
   experts: expertsRouter,
   xp: xpRouter,
-  leaderboard: leaderboardRouter,
+
   progress: progressRouter,
   search: searchRouter,
   users: usersRouter,

@@ -24,10 +24,10 @@ export const StudioNavbar = () => {
         <div className="flex-1" />
         <div className="flex-shrink-0 items-center flex gap-4">
           <Link
-            href="/studio/submit"
-            className="px-4 py-2 bg-[#009BFF] hover:bg-[#009BFF]/90 text-white text-sm font-medium rounded-full transition-colors"
+            href="/"
+            className="px-4 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white text-sm transition-colors"
           >
-            + Submit Resource
+            &larr; Exit Studio
           </Link>
           <div className="size-8">
             <AuthButton />

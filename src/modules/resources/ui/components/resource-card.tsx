@@ -1,13 +1,6 @@
-import { UserAvatar } from "@/components/user-avatar";
+import { getThumbnailPalette } from "@/lib/thumbnail";
+import { HeartIcon } from "lucide-react";
 import Link from "next/link";
-
-const TYPE_COLORS: Record<string, string> = {
-  tutorial: "bg-[#009BFF]/20 text-[#009BFF]",
-  tool: "bg-[#770BFF]/20 text-[#770BFF]",
-  doc: "bg-[#4CC3AE]/20 text-[#4CC3AE]",
-  template: "bg-orange-500/20 text-orange-400",
-  video: "bg-[#009BFF]/20 text-[#009BFF]",
-};
 
 interface ResourceCardProps {
   id: string;
@@ -17,6 +10,7 @@ interface ResourceCardProps {
   thumbnailUrl?: string | null;
   xpValue: number;
   viewCount: number;
+  likeCount?: number | null;
   author?: {
     name: string;
     imageUrl: string;
@@ -30,67 +24,72 @@ interface ResourceCardProps {
 export const ResourceCard = ({
   id,
   title,
-  description,
   type,
   thumbnailUrl,
-  xpValue,
   viewCount,
+  likeCount,
   author,
-  category,
 }: ResourceCardProps) => {
+  const palette = getThumbnailPalette(thumbnailUrl);
+
   return (
     <Link href={`/resources/${id}`} prefetch>
-      <div className="group bg-[#00084D]/60 border border-white/[0.08] rounded-2xl p-5 hover:border-[#009BFF] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer h-full flex flex-col">
+      <div className="group bg-[#00084D]/60 border border-white/[0.08] rounded-2xl hover:border-[#009BFF] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer h-full flex flex-col overflow-hidden">
         {/* Thumbnail */}
-        {thumbnailUrl ? (
-          <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-[#00084D]">
-            <img
-              src={thumbnailUrl}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="aspect-video rounded-xl mb-4 bg-gradient-to-br from-[#00084D] to-[#009BFF]/20 flex items-center justify-center">
-            <span className="text-3xl opacity-40">
-              {type === "video" ? "▶" : type === "doc" ? "📄" : type === "tool" ? "🔧" : type === "template" ? "📋" : "📚"}
+        {palette ? (
+          <div
+            className="w-full aspect-video flex items-center justify-center p-3"
+            style={{ backgroundColor: palette.bg }}
+          >
+            <span
+              className="font-bold text-center text-sm leading-tight line-clamp-2"
+              style={{ color: palette.text }}
+            >
+              {title}
             </span>
           </div>
+        ) : thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={title}
+            className="w-full aspect-video object-cover"
+          />
+        ) : (
+          <div className="w-full aspect-video bg-gradient-to-br from-[#00084D] to-[#009BFF]/20 flex items-center justify-center">
+            <span className="text-white/20 text-xs">No thumbnail</span>
+          </div>
         )}
 
-        {/* Type badge + XP */}
-        <div className="flex items-center justify-between mb-3">
-          <span
-            className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${TYPE_COLORS[type] || TYPE_COLORS.doc}`}
-          >
-            {type}
-          </span>
-          <span className="text-xs font-medium text-[#009BFF] bg-[#009BFF]/10 px-2 py-0.5 rounded-full">
-            +{xpValue} XP
-          </span>
-        </div>
+        {/* Card bottom */}
+        <div className="p-4 flex flex-col gap-3">
+          {/* Row 1: Type badge left, Likes right */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-white/70 font-medium capitalize">
+              {type}
+            </span>
+            <span className="flex items-center gap-1 text-xs text-white/50">
+              <HeartIcon size={11} fill="currentColor" className="text-red-400" />
+              {likeCount ?? 0}
+            </span>
+          </div>
 
-        {/* Title */}
-        <h3 className="text-[#FCFCFC] font-bold text-base leading-tight mb-2 line-clamp-2 group-hover:text-[#009BFF] transition-colors">
-          {title}
-        </h3>
+          {/* Title */}
+          <p className="text-white font-semibold text-sm leading-snug line-clamp-2 group-hover:text-[#009BFF] transition-colors">
+            {title}
+          </p>
 
-        {/* Description */}
-        {description && (
-          <p className="text-white/40 text-sm line-clamp-2 mb-3 flex-1">{description}</p>
-        )}
-
-        {/* Author + Views */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.06]">
-          {author && (
+          {/* Row 2: Avatar + name left, Views right */}
+          <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center gap-2">
-              <UserAvatar imageUrl={author.imageUrl} name={author.name} size="xs" />
-              <span className="text-xs text-white/50">{author.name}</span>
+              <div className="w-6 h-6 rounded-full bg-[#009BFF]/20 flex items-center justify-center text-[10px] text-[#009BFF] font-bold uppercase">
+                {author?.name?.[0] ?? "?"}
+              </div>
+              <span className="text-white/50 text-xs">{author?.name}</span>
             </div>
-          )}
-          <span className="text-xs text-white/30">
-            {viewCount} {viewCount === 1 ? "view" : "views"}
-          </span>
+            <span className="text-white/30 text-xs">
+              {viewCount ?? 0} {viewCount === 1 ? "view" : "views"}
+            </span>
+          </div>
         </div>
       </div>
     </Link>

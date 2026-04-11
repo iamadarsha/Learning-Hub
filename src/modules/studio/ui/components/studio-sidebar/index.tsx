@@ -1,6 +1,5 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -11,9 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   BarChart3Icon,
-  FileTextIcon,
   LayoutDashboardIcon,
-  LogOutIcon,
   PlusCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,13 +24,8 @@ const items = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: "My Resources",
-    url: "/studio/resources",
-    icon: FileTextIcon,
-  },
-  {
-    title: "Submit New",
-    url: "/studio/submit",
+    title: "Contribute",
+    url: "/studio/contribute",
     icon: PlusCircleIcon,
   },
   {
@@ -74,19 +66,6 @@ export const StudioSidebar = () => {
                 </SidebarMenuItem>
               );
             })}
-            <Separator className="bg-white/[0.06]" />
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip={"Exit studio"}
-                asChild
-                className="text-white/60 hover:text-[#FCFCFC] hover:bg-white/[0.04]"
-              >
-                <Link href={"/"} prefetch>
-                  <LogOutIcon className="size-5" />
-                  <span className="text-sm">Exit studio</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

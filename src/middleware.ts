@@ -1,11 +1,12 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isProtectedRoute = createRouteMatcher(["/studio(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/studio(.*)", "/settings(.*)", "/progress(.*)"]);
 const isPublicRoute = createRouteMatcher([
   "/api/users/webhook",
   "/",
+  "/explore",
   "/experts",
-  "/leaderboard",
+  "/fix-the-itch",
   "/resources(.*)",
 ]);
 

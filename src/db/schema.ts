@@ -83,6 +83,7 @@ export const resources = pgTable("resources", {
   visibility: resourceVisibility("visibility").notNull().default("private"),
   xpValue: integer("xp_value").default(10).notNull(),
   viewCount: integer("view_count").default(0).notNull(),
+  likeCount: integer("like_count").default(0),
   isPublished: boolean("is_published").default(true).notNull(),
   tags: text("tags").array(),
   authorId: text("author_id"),
@@ -95,6 +96,15 @@ export const resources = pgTable("resources", {
   categoryId: uuid("category_id").references(() => categories.id, {
     onDelete: "set null",
   }),
+  // Transcription fields (populated by external API)
+  transcriptionStatus: text("transcription_status").default("pending"),
+  // "pending" | "processing" | "completed" | "failed"
+  transcriptionTitle: text("transcription_title"),
+  transcriptionSummary: text("transcription_summary"),
+  transcriptionDetailed: text("transcription_detailed"),
+  transcriptionSteps: text("transcription_steps"), // JSON stringified
+  transcriptionTags: text("transcription_tags").array(),
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
