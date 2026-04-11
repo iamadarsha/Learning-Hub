@@ -282,34 +282,37 @@ export function ContributeStep3({ stepData, onComplete, onBack }: ContributeStep
       </div>
 
       {/* Bottom CTAs */}
-      <div className="space-y-3 pt-4">
-        <button
-          onClick={handleSubmit}
-          disabled={publish.isPending}
-          className="w-full py-3.5 rounded-full font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{
-            background: "linear-gradient(135deg, #009BFF, #770BFF)",
-          }}
-        >
-          {publish.isPending ? (
-            <>
-              <Loader2Icon className="size-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            "Submit Resource"
-          )}
-        </button>
+      <div className="pt-4">
+        <div className="flex items-center justify-between mt-6">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-6 py-2.5 rounded-full border border-white/20 text-white/60 hover:border-white/40 hover:text-white text-sm transition-colors"
+          >
+            ← Back
+          </button>
 
-        <button
-          onClick={onBack}
-          className="text-sm text-white/40 hover:text-white/70 transition-colors"
-        >
-          &larr; Back
-        </button>
+          <button
+            onClick={handleSubmit}
+            disabled={publish.isPending}
+            className="py-3.5 px-8 rounded-full font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            style={{
+              background: "linear-gradient(135deg, #009BFF, #770BFF)",
+            }}
+          >
+            {publish.isPending ? (
+              <>
+                <Loader2Icon className="size-4 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              "Publish Resource"
+            )}
+          </button>
+        </div>
 
         {publish.isError && (
-          <p className="text-red-400 text-sm">
+          <p className="text-red-400 text-sm mt-3">
             Failed to publish. Please try again.
           </p>
         )}

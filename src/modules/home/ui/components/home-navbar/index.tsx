@@ -1,6 +1,5 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthButton } from "@/modules/auth/ui/components/auth-button";
-import { TrophyIcon } from "lucide-react";
 import Link from "next/link";
 import { SearchInput } from "./search-input";
 
@@ -26,12 +25,6 @@ export const HomeNavbar = () => {
         </div>
 
         <div className="shrink-0 items-center flex gap-4">
-          <Link
-            href="/leaderboard"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-white/60 hover:text-[#009BFF] transition-colors"
-          >
-            <TrophyIcon className="size-4" />
-          </Link>
           <div className="w-26 flex items-center justify-center">
             <AuthButton />
           </div>

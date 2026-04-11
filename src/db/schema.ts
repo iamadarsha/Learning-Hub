@@ -84,7 +84,7 @@ export const resources = pgTable("resources", {
   xpValue: integer("xp_value").default(10).notNull(),
   viewCount: integer("view_count").default(0).notNull(),
   likeCount: integer("like_count").default(0),
-  isPublished: boolean("is_published").default(true).notNull(),
+  isPublished: boolean("is_published").default(false).notNull(),
   tags: text("tags").array(),
   authorId: text("author_id"),
   authorName: text("author_name"),

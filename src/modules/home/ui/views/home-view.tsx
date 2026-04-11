@@ -3,7 +3,8 @@
 import { ResourceCard } from "@/modules/resources/ui/components/resource-card";
 import { ProgressResourceCard } from "@/modules/resources/ui/components/progress-resource-card";
 import { useTRPC } from "@/trpc/client";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
 import { Suspense, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -12,118 +13,6 @@ import { CategoriesSection } from "../sections/categories-section";
 interface HomeViewProps {
   categoryId?: string;
 }
-
-// Mock data for Continue Watching — will be replaced by real view tracking later
-const CONTINUE_WATCHING = [
-  {
-    id: "cw-1",
-    title: "Getting started with Pi — Pattern's AI assistant",
-    type: "video",
-    authorName: "Hyvmind Team",
-    duration: "12:34",
-    progress: 65,
-  },
-  {
-    id: "cw-2",
-    title: "How to build your first n8n workflow",
-    type: "tutorial",
-    authorName: "Hyvmind Team",
-    duration: "18:45",
-    progress: 32,
-  },
-  {
-    id: "cw-3",
-    title: "Figma Variables deep dive",
-    type: "video",
-    authorName: "Hyvmind Team",
-    duration: "24:10",
-    progress: 78,
-  },
-  {
-    id: "cw-4",
-    title: "Bulk image generation with AI tools",
-    type: "video",
-    authorName: "Hyvmind Team",
-    duration: "9:52",
-    progress: 15,
-  },
-  {
-    id: "cw-5",
-    title: "Writing effective Claude prompts for data extraction",
-    type: "tutorial",
-    authorName: "Hyvmind Team",
-    duration: "15:20",
-    progress: 50,
-  },
-];
-
-const LAST_WATCHED = [
-  {
-    id: "lw-1",
-    title: "Amazon listing optimisation checklist walkthrough",
-    type: "video",
-    authorName: "Hyvmind Team",
-    duration: "22:15",
-    progress: 100,
-  },
-  {
-    id: "lw-2",
-    title: "Building dashboards with Looker Studio",
-    type: "tutorial",
-    authorName: "Hyvmind Team",
-    duration: "31:08",
-    progress: 100,
-  },
-  {
-    id: "lw-3",
-    title: "Prompt engineering masterclass — Part 1",
-    type: "video",
-    authorName: "Hyvmind Team",
-    duration: "45:22",
-    progress: 100,
-  },
-  {
-    id: "lw-4",
-    title: "n8n + Slack integration deep dive",
-    type: "tutorial",
-    authorName: "Hyvmind Team",
-    duration: "14:30",
-    progress: 100,
-  },
-];
-
-export const HomeView = ({ categoryId }: HomeViewProps) => {
-  return (
-    <div className="max-w-[2400px] mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6">
-      <CategoriesSection categoryId={categoryId} />
-
-      {/* Continue Watching */}
-      <HorizontalSection
-        title="Continue Watching"
-        subtitle="Pick up where you left off"
-        items={CONTINUE_WATCHING}
-      />
-
-      {/* Last Watched */}
-      <HorizontalSection
-        title="Last Watched"
-        subtitle="Recently completed"
-        items={LAST_WATCHED}
-      />
-
-      {/* All Resources */}
-      <div>
-        <h2 className="text-lg font-bold text-[#FCFCFC] mb-1">All Resources</h2>
-        <p className="text-xs text-white/40 mb-4">Browse the full knowledge library</p>
-      </div>
-      <Suspense fallback={<ResourceGridSkeleton />}>
-        <ErrorBoundary fallback={<div className="text-white/40">Failed to load resources</div>}>
-          <ResourceGrid categoryId={categoryId} />
-        </ErrorBoundary>
-      </Suspense>
-    </div>
-  );
-};
 
 // ─── Horizontal scroll section ───
 
@@ -134,7 +23,7 @@ interface HorizontalSectionProps {
     id: string;
     title: string;
     type: string;
-    authorName?: string;
+    authorName?: string | null;
     duration?: string;
     progress: number;
     thumbnailUrl?: string | null;
@@ -150,7 +39,6 @@ const HorizontalSection = ({ title, subtitle, items }: HorizontalSectionProps) =
 
   return (
     <div>
-      {/* Section header */}
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-lg font-bold text-[#FCFCFC]">{title}</h2>
@@ -164,8 +52,6 @@ const HorizontalSection = ({ title, subtitle, items }: HorizontalSectionProps) =
           <ChevronRightIcon className="size-3.5" />
         </button>
       </div>
-
-      {/* Horizontal scroll */}
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto scroll-hidden pb-2"
@@ -187,7 +73,78 @@ const HorizontalSection = ({ title, subtitle, items }: HorizontalSectionProps) =
   );
 };
 
+// ─── Continue Watching (real data) ───
+
+const ContinueWatchingSkeleton = () => (
+  <div>
+    <div className="h-5 w-44 bg-white/[0.06] rounded mb-1 animate-pulse" />
+    <div className="h-3 w-32 bg-white/[0.04] rounded mb-4 animate-pulse" />
+    <div className="flex gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex-shrink-0 w-[300px] h-[200px] bg-white/[0.04] rounded-2xl animate-pulse" />
+      ))}
+    </div>
+  </div>
+);
+
+const ContinueWatchingSuspense = () => {
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(trpc.progress.getInProgress.queryOptions());
+
+  if (!data || data.length === 0) return null;
+
+  const items = data
+    .filter((row) => row.resource !== null)
+    .map((row) => ({
+      id: row.resource!.id,
+      title: row.resource!.title,
+      type: row.resource!.type,
+      thumbnailUrl: row.resource!.thumbnailUrl,
+      authorName: row.resource!.authorName,
+      progress: 10, // real % tracking is Phase 2 (no total duration stored yet)
+    }));
+
+  if (items.length === 0) return null;
+
+  return (
+    <HorizontalSection
+      title="Continue Watching"
+      subtitle="Pick up where you left off"
+      items={items}
+    />
+  );
+};
+
+const ContinueWatchingSection = () => {
+  const { isSignedIn } = useAuth();
+  if (!isSignedIn) return null;
+
+  return (
+    <Suspense fallback={<ContinueWatchingSkeleton />}>
+      <ErrorBoundary fallback={null}>
+        <ContinueWatchingSuspense />
+      </ErrorBoundary>
+    </Suspense>
+  );
+};
+
 // ─── Resource grid ───
+
+const ResourceGridSkeleton = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <div
+        key={i}
+        className="bg-[#00084D]/60 border border-white/[0.08] rounded-2xl p-5 animate-pulse"
+      >
+        <div className="aspect-video rounded-xl bg-white/[0.04] mb-4" />
+        <div className="h-3 w-16 rounded-full bg-white/[0.06] mb-3" />
+        <div className="h-4 w-3/4 rounded bg-white/[0.06] mb-2" />
+        <div className="h-3 w-1/2 rounded bg-white/[0.04]" />
+      </div>
+    ))}
+  </div>
+);
 
 const ResourceGrid = ({ categoryId }: { categoryId?: string }) => {
   const trpc = useTRPC();
@@ -251,20 +208,26 @@ const ResourceGrid = ({ categoryId }: { categoryId?: string }) => {
   );
 };
 
-const ResourceGridSkeleton = () => {
+// ─── Page view ───
+
+export const HomeView = ({ categoryId }: HomeViewProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-[#00084D]/60 border border-white/[0.08] rounded-2xl p-5 animate-pulse"
-        >
-          <div className="aspect-video rounded-xl bg-white/[0.04] mb-4" />
-          <div className="h-3 w-16 rounded-full bg-white/[0.06] mb-3" />
-          <div className="h-4 w-3/4 rounded bg-white/[0.06] mb-2" />
-          <div className="h-3 w-1/2 rounded bg-white/[0.04]" />
-        </div>
-      ))}
+    <div className="max-w-[2400px] mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6">
+      <CategoriesSection categoryId={categoryId} />
+
+      {/* Continue Watching — real data, auth-gated */}
+      <ContinueWatchingSection />
+
+      {/* All Resources */}
+      <div>
+        <h2 className="text-lg font-bold text-[#FCFCFC] mb-1">All Resources</h2>
+        <p className="text-xs text-white/40 mb-4">Browse the full knowledge library</p>
+      </div>
+      <Suspense fallback={<ResourceGridSkeleton />}>
+        <ErrorBoundary fallback={<div className="text-white/40">Failed to load resources</div>}>
+          <ResourceGrid categoryId={categoryId} />
+        </ErrorBoundary>
+      </Suspense>
     </div>
   );
 };

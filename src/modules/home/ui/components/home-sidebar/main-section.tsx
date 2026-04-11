@@ -36,7 +36,7 @@ const discoveryItems: NavItem[] = [
   { title: "Home", url: "/", icon: HomeIcon },
   { title: "Explore", url: "/explore", icon: CompassIcon },
   { title: "Find Experts", url: "/experts", icon: UsersIcon },
-  { title: "Fix the itch", url: "/fix-the-itch", icon: WrenchIcon, disabled: true, badge: "Soon" },
+  { title: "Fix the itch", url: "/fix-the-itch", icon: WrenchIcon },
 ];
 
 const personalItems: NavItem[] = [
@@ -45,7 +45,7 @@ const personalItems: NavItem[] = [
 ];
 
 const libraryItems: NavItem[] = [
-  { title: "Recently Viewed", url: "/history", icon: ClockIcon, auth: true },
+  { title: "Watch History", url: "/history", icon: ClockIcon, auth: true },
   { title: "My Favourites", url: "/favorites", icon: HeartIcon, auth: true },
 ];
 

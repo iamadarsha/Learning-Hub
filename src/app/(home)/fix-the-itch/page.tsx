@@ -1,5 +1,5 @@
 "use client";
-import { PlusIcon, UserCircleIcon, WrenchIcon } from "lucide-react";
+import { Plus, UserCircle } from "lucide-react";
 
 type Card = {
   title: string;
@@ -111,22 +111,15 @@ function ProblemCard({ card }: { card: Card }) {
           {card.title}
         </p>
         <div className="flex flex-wrap gap-1.5 mb-3">
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              card.status === "Open"
-                ? "bg-[#009BFF]/15 text-[#009BFF]"
-                : card.status === "Claimed"
-                  ? "bg-[#770BFF]/15 text-[#770BFF]"
-                  : "bg-[#4CC3AE]/15 text-[#4CC3AE]"
-            }`}
-          >
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium
+            ${card.status === "Open"    ? "bg-[#009BFF]/15 text-[#009BFF]" : ""}
+            ${card.status === "Claimed" ? "bg-[#770BFF]/15 text-[#770BFF]" : ""}
+            ${card.status === "Solved"  ? "bg-[#4CC3AE]/15 text-[#4CC3AE]" : ""}
+          `}>
             {card.status}
           </span>
           {card.tags.map((tag, i) => (
-            <span
-              key={i}
-              className="text-xs px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50"
-            >
+            <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50">
               {tag}
             </span>
           ))}
@@ -141,7 +134,7 @@ function ProblemCard({ card }: { card: Card }) {
             </div>
           ) : (
             <div className="w-6 h-6 rounded-full border border-dashed border-white/20 flex items-center justify-center">
-              <UserCircleIcon size={12} className="text-white/20" />
+              <UserCircle size={12} className="text-white/20"/>
             </div>
           )}
           <span className="text-white/30 text-xs">{card.date}</span>
@@ -151,15 +144,7 @@ function ProblemCard({ card }: { card: Card }) {
   );
 }
 
-function Column({
-  title,
-  count,
-  cards,
-}: {
-  title: string;
-  count: number;
-  cards: Card[];
-}) {
+function Column({ title, count, cards }: { title: string; count: number; cards: Card[] }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
@@ -168,7 +153,7 @@ function Column({
       </div>
       <div className="flex flex-col gap-3">
         {cards.map((card, i) => (
-          <ProblemCard key={i} card={card} />
+          <ProblemCard key={i} card={card}/>
         ))}
       </div>
     </div>
@@ -181,8 +166,7 @@ export default function FixTheItchPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Fix the itch</h1>
         <p className="text-white/50 text-sm mt-1">
-          Got a problem AI could solve? Post it. If someone on the team can
-          help, they&apos;ll claim it.
+          Got a problem AI could solve? Post it. If someone on the team can help, they&apos;ll claim it.
         </p>
       </div>
       <div className="mb-8">
@@ -190,17 +174,17 @@ export default function FixTheItchPage() {
           disabled
           className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white/30 text-sm cursor-not-allowed flex items-center gap-2"
         >
-          <PlusIcon size={14} />
+          <Plus size={14}/>
           Post a problem
           <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full">
             Coming soon
           </span>
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Column title="Open" count={3} cards={OPEN_CARDS} />
-        <Column title="Claimed" count={2} cards={CLAIMED_CARDS} />
-        <Column title="Solved" count={3} cards={SOLVED_CARDS} />
+      <div className="grid grid-cols-3 gap-6">
+        <Column title="Open" count={3} cards={OPEN_CARDS}/>
+        <Column title="Claimed" count={2} cards={CLAIMED_CARDS}/>
+        <Column title="Solved" count={3} cards={SOLVED_CARDS}/>
       </div>
     </div>
   );

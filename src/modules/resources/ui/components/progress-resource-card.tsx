@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PlayIcon } from "lucide-react";
+import { getThumbnailPalette } from "@/lib/thumbnail";
 
 const TYPE_COLORS: Record<string, string> = {
   tutorial: "bg-[#009BFF]/20 text-[#009BFF]",
@@ -30,12 +31,26 @@ export const ProgressResourceCard = ({
   duration,
   progress,
 }: ProgressResourceCardProps) => {
+  const palette = getThumbnailPalette(thumbnailUrl);
+
   return (
     <Link href={`/resources/${id}`} prefetch>
       <div className="group flex-shrink-0 w-[280px] sm:w-[300px] bg-[#00084D]/60 border border-white/[0.08] rounded-2xl overflow-hidden hover:border-[#009BFF] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
         {/* Thumbnail with play overlay */}
         <div className="relative aspect-video bg-gradient-to-br from-[#00084D] to-[#009BFF]/20">
-          {thumbnailUrl ? (
+          {palette ? (
+            <div
+              className="w-full h-full flex items-center justify-center p-3"
+              style={{ backgroundColor: palette.bg }}
+            >
+              <span
+                className="font-bold text-center text-sm leading-tight line-clamp-2"
+                style={{ color: palette.text }}
+              >
+                {title}
+              </span>
+            </div>
+          ) : thumbnailUrl ? (
             <img
               src={thumbnailUrl}
               alt={title}

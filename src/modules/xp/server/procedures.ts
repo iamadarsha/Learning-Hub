@@ -66,7 +66,14 @@ export const xpRouter = createTRPCRouter({
         )
         .limit(1);
 
-      if (existingView) return { xpAwarded: 0, alreadyViewed: true };
+      if (existingView) {
+        // Update viewedAt so Continue Watching reorders to most recently watched
+        await db
+          .update(resourceViews)
+          .set({ viewedAt: new Date() })
+          .where(eq(resourceViews.id, existingView.id));
+        return { xpAwarded: 0, alreadyViewed: true };
+      }
 
       // Record the view
       await db.insert(resourceViews).values({

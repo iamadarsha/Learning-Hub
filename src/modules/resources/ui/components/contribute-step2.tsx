@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTRPC } from "@/trpc/client";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -9,6 +9,7 @@ import {
   XCircleIcon,
   PlusIcon,
   XIcon,
+  Maximize2,
 } from "lucide-react";
 import { ThumbnailPicker } from "./thumbnail-picker";
 
@@ -19,6 +20,13 @@ type ThumbnailData =
 interface ContributeStep2Props {
   resourceId: string;
   title?: string;
+  initialValues?: {
+    categoryId?: string;
+    description?: string;
+    attachments?: string[];
+    thumbnailData?: ThumbnailData;
+  };
+  onBack: () => void;
   onComplete: (data: {
     categoryId: string;
     description?: string;
@@ -28,15 +36,29 @@ interface ContributeStep2Props {
   }) => void;
 }
 
-export function ContributeStep2({ resourceId, title, onComplete }: ContributeStep2Props) {
-  const [categoryId, setCategoryId] = useState("");
-  const [description, setDescription] = useState("");
-  const [attachments, setAttachments] = useState<string[]>([]);
+export function ContributeStep2({ resourceId, title, initialValues, onBack, onComplete }: ContributeStep2Props) {
+  const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? "");
+  const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [attachments, setAttachments] = useState<string[]>(initialValues?.attachments ?? []);
   const [attachmentInput, setAttachmentInput] = useState("");
-  const [thumbnailData, setThumbnailData] = useState<ThumbnailData>({
-    type: "preset",
-    paletteIndex: 0,
-  });
+  const [thumbnailData, setThumbnailData] = useState<ThumbnailData>(
+    initialValues?.thumbnailData ?? { type: "preset", paletteIndex: 0 }
+  );
+  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(description);
+
+  // Re-seed state if initialValues arrive late (e.g. coming back from Step 3)
+  useEffect(() => {
+    if (initialValues?.categoryId) setCategoryId(initialValues.categoryId);
+    if (initialValues?.description) setDescription(initialValues.description);
+    if (initialValues?.attachments?.length) setAttachments(initialValues.attachments);
+    if (initialValues?.thumbnailData) setThumbnailData(initialValues.thumbnailData);
+  }, [
+    initialValues?.categoryId,
+    initialValues?.description,
+    initialValues?.attachments,
+    initialValues?.thumbnailData,
+  ]);
 
   const trpc = useTRPC();
 
@@ -61,7 +83,8 @@ export function ContributeStep2({ resourceId, title, onComplete }: ContributeSte
     const trimmed = attachmentInput.trim();
     if (trimmed && attachments.length < 3) {
       try {
-        new URL(trimmed);
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return;
         setAttachments([...attachments, trimmed]);
         setAttachmentInput("");
       } catch {
@@ -178,14 +201,27 @@ export function ContributeStep2({ resourceId, title, onComplete }: ContributeSte
           <label className="text-sm font-medium text-white/70">
             Description
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What will people learn from this?"
-            rows={3}
-            maxLength={500}
-            className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white placeholder:text-white/30 focus:outline-none focus:border-[#009BFF] transition-colors resize-none"
-          />
+          <div className="relative">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What will people learn from this?"
+              rows={4}
+              maxLength={500}
+              className="w-full px-4 py-3 rounded-lg bg-[#00084D] border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#009BFF] transition-colors resize-none pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setDescriptionDraft(description);
+                setDescriptionModalOpen(true);
+              }}
+              className="absolute top-2.5 right-2.5 p-1 rounded text-white/30 hover:text-white/60 transition-colors"
+              title="Expand"
+            >
+              <Maximize2 size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Attachments */}
@@ -235,13 +271,89 @@ export function ContributeStep2({ resourceId, title, onComplete }: ContributeSte
       </div>
 
       {/* CTA */}
-      <button
-        onClick={handleNext}
-        disabled={!canProceed}
-        className="px-8 py-3 bg-[#009BFF] hover:bg-[#009BFF]/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-full transition-all"
-      >
-        Next &rarr;
-      </button>
+      <div className="flex items-center justify-between mt-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="px-6 py-2.5 rounded-full border border-white/20 text-white/60 hover:border-white/40 hover:text-white text-sm transition-colors"
+        >
+          ← Back
+        </button>
+
+        <button
+          onClick={handleNext}
+          disabled={!canProceed}
+          className="px-8 py-3 bg-[#009BFF] hover:bg-[#009BFF]/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-full transition-all"
+        >
+          Next &rarr;
+        </button>
+      </div>
+
+      {/* Description expand modal */}
+      {descriptionModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => {
+              setDescriptionDraft(description);
+              setDescriptionModalOpen(false);
+            }}
+          />
+
+          {/* Modal */}
+          <div className="relative z-10 w-full max-w-2xl mx-4 bg-[#00084D] border border-white/10 rounded-2xl overflow-hidden">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-white/[0.08]">
+              <h2 className="text-white font-semibold text-base">Description</h2>
+              <p className="text-white/40 text-xs mt-1">
+                What will people learn from this resource?
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5">
+              <textarea
+                autoFocus
+                value={descriptionDraft}
+                onChange={(e) => setDescriptionDraft(e.target.value)}
+                placeholder="What will people learn from this?"
+                maxLength={500}
+                className="w-full h-64 px-4 py-3 rounded-lg bg-[#090A0F] border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#009BFF] transition-colors resize-none"
+              />
+              <div className="flex justify-end mt-1">
+                <span className="text-white/20 text-xs">
+                  {descriptionDraft.length} / 500
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDescriptionDraft(description);
+                  setDescriptionModalOpen(false);
+                }}
+                className="px-5 py-2 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDescription(descriptionDraft);
+                  setDescriptionModalOpen(false);
+                }}
+                className="px-5 py-2 rounded-full bg-[#009BFF] text-white text-sm font-medium hover:bg-[#009BFF]/80 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

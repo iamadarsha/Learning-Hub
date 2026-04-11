@@ -276,6 +276,31 @@ export const resourcesRouter = createTRPCRouter({
       return deleted;
     }),
 
+  deleteResource: protectedProcedure
+    .input(z.object({ resourceId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { resourceId } = input;
+
+      const [existing] = await db
+        .select()
+        .from(resources)
+        .where(and(eq(resources.id, resourceId), eq(resources.userId, ctx.user.id)))
+        .limit(1);
+
+      if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // 1. Delete resource views (Continue Watching, Recently Viewed, Last Watched)
+      await db.delete(resourceViews).where(eq(resourceViews.resourceId, resourceId));
+
+      // 2. Delete XP events associated with this resource
+      await db.delete(xpEvents).where(eq(xpEvents.resourceId, resourceId));
+
+      // 3. Delete the resource itself
+      await db.delete(resources).where(eq(resources.id, resourceId));
+
+      return { success: true };
+    }),
+
   // ── Contribute flow procedures ──
 
   createDraft: protectedProcedure
@@ -297,7 +322,7 @@ export const resourcesRouter = createTRPCRouter({
           authorImageUrl: ctx.user.imageUrl,
           visibility: "public",
           xpValue: 10,
-          isPublished: true,
+          isPublished: false,
           transcriptionStatus: "processing",
         })
         .returning();
@@ -306,6 +331,21 @@ export const resourcesRouter = createTRPCRouter({
       triggerTranscription(resource.id, input.url).catch(console.error);
 
       return resource;
+    }),
+
+  deleteDraft: protectedProcedure
+    .input(z.object({ resourceId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await db
+        .delete(resources)
+        .where(
+          and(
+            eq(resources.id, input.resourceId),
+            eq(resources.userId, ctx.user.id),
+            eq(resources.isPublished, false) // safety: only delete unpublished drafts
+          )
+        );
+      return { success: true };
     }),
 
   getTranscriptionStatus: protectedProcedure

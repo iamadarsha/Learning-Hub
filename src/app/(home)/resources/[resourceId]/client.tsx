@@ -3,7 +3,7 @@
 import { UserAvatar } from "@/components/user-avatar";
 import { getDriveEmbedUrl } from "@/lib/drive";
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -19,6 +19,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export const ResourceDetailView = ({ resourceId }: { resourceId: string }) => {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const hasRecorded = useRef(false);
 
   const { data } = useSuspenseQuery(
@@ -28,6 +29,7 @@ export const ResourceDetailView = ({ resourceId }: { resourceId: string }) => {
   const recordView = useMutation(
     trpc.xp.recordView.mutationOptions({
       onSuccess: (result) => {
+        queryClient.invalidateQueries(trpc.progress.getInProgress.queryOptions());
         if (result.xpAwarded > 0) {
           toast.success(`+${result.xpAwarded} XP earned!`, {
             description: `Total: ${result.totalXp} XP`,
